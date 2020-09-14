@@ -1,0 +1,30 @@
+name: publish tag
+
+on: 
+  workflow_dispatch:
+    inputs:
+      version_name:
+        descriptoin: 'Version name to publish to docker hub'
+        required: true
+
+jobs:
+  docker:
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions-ecosystem/action-regex-match@v2
+        id: regex-match
+        with:
+          text: ${{ inputs.version_name }}
+          regex: '^v[0-9]+\.[0-9]+\.[0-9]+(\-[a-zA-Z]+\.[0-9]+)'
+
+      - uses: actions/checkout@v2
+        if: ${{ steps.regex-match.outputs.match != '' }}
+        ref: ${{ inputs.version_name }}
+        
+      - uses: docker/build-push-action@v1.1.1
+        if: ${{ steps.regex-match.outputs.match != '' }}
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          tags: hihiboss/github-action-docker-test:${{ inputs.version_name }}
