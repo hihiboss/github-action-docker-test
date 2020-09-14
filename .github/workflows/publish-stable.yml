@@ -1,0 +1,25 @@
+name: publish stable tag
+
+on: 
+  workflow_dispatch:
+    inputs:
+      version_name:
+        descriptoin: 'Version name to publish stable tag to docker hub'
+        required: true
+
+jobs:
+  docker:
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+         ref: ${{ github.event.inputs.version_name }}
+        
+      - uses: docker/build-push-action@v1.1.1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          push: true
+          repository: hihiboss/github-action-docker-test
+          tags: stable
