@@ -15,16 +15,20 @@ jobs:
       - uses: actions-ecosystem/action-regex-match@v2
         id: regex-match
         with:
-          text: ${{ inputs.version_name }}
+          text: ${{ github.event.inputs.version_name }}
           regex: '^v[0-9]+\.[0-9]+\.[0-9]+(\-[a-zA-Z]+\.[0-9]+)'
 
       - uses: actions/checkout@v2
+
+      - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+      
+      - uses: actions/checkout@v2
         if: ${{ steps.regex-match.outputs.match != '' }}
-        ref: ${{ inputs.version_name }}
+        ref: tags/${{ github.event.inputs.version_name }}
         
       - uses: docker/build-push-action@v1.1.1
         if: ${{ steps.regex-match.outputs.match != '' }}
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          tags: hihiboss/github-action-docker-test:${{ inputs.version_name }}
+          tags: hihiboss/github-action-docker-test:${{ github.event.inputs.version_name }}
